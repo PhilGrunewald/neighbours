@@ -8,14 +8,19 @@
 
 <div class="container">
  <div class="row">
-  <div class="col-xs-12" style="background-color: transparent;">
-   <img class="img-responsive center-block" src="img/METER_banner.png" alt="METER" width="900"/>
+  <div class="col-xs-12 col-sm-8 col-sm-push-2" style="background-color: transparent;">
+   <img class="img-responsive center-block" src="img/house_banner.png" alt="Power Neighbours"/>
   </div>
  </div>
 
 <div class="row">
-  <div class="col-xs-12 col-sm-push-3" style="background-color: transparent;">
+  <div class="col-xs-12 col-sm-6 col-sm-push-3" style="background-color: transparent;">
+</br>
 	<h3>Play Neighbours</h3>
+<p>Your neighbours need your help. Ever since the family from hell has moved in next door, things have gone bad. They use so much electricity that the transformer in the road no longer copes.</p>
+<p>Early evenings are the worst. Between 6 and 7pm everyone seems to be using all their appliances. The guy from the Central Power Networks says:</br> "<i>If you don't reduce electricity use between 6 and 7, the transformer might fail and you will sit in the dark.</i>"</p>
+<p>Be a good neighbour and help.</p>
+
 
 <form class="form-inline" role="form" action="HouseChoice.php" method="post">
 	<div class="form-group">
