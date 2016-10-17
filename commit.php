@@ -7,21 +7,24 @@
 
 	$idHouse  = $_GET['hid'];
 
-	// get Round
+
+	// get Round for this house
 	$sqlq   = "SELECT Round,Street_idStreet FROM House WHERE idHouse = $idHouse";
 	$result = mysqli_query($db,$sqlq);
 	$row    = mysqli_fetch_assoc($result);
 	$House_Round = $row['Round'];
 	$idStreet = $row['Street_idStreet'];
-
-	// get highest commited round
-	$sqlq   = "SELECT max(House_Round) FROM Choices WHERE House_idHouse = $idHouse";
+	// get where the street is (this pre-empts the houses
+	$sqlq   = "SELECT House_Round FROM Street WHERE idStreet = $idStreet";
 	$result = mysqli_query($db,$sqlq);
 	$row    = mysqli_fetch_assoc($result);
-	$Commited_Round = $row['max(House_Round)'];
+	$Street_Round = $row['House_Round'];
 
-	if ($House_Round > $Commited_Round) {
-      foreach($_GET as $key => $value) {
+	if ($Street_Round > $House_Round) {
+	$sql="UPDATE House SET Round = $Street_Round WHERE idHouse = $idHouse";
+	mysqli_query($db,$sql);
+	$House_Round = $Street_Round;
+    foreach($_GET as $key => $value) {
 		if (($key != 'sid') && ($key != 'hid')) {
 		$sql="INSERT INTO Choices (`House_Round`,`Street_idStreet`,`House_idHouse`,`Appliance_idAppliance`,`Minutes`) VALUES ('$House_Round','$idStreet','$idHouse','$key','$value')";
 		mysqli_query($db,$sql);
@@ -36,21 +39,36 @@
 	$row = mysqli_fetch_assoc($result);
 	$minRound = $row['min(Round)'];
 	
-	include("header.php"); 
 	if ($House_Round > $minRound) {
-		echo '<meta http-equiv=”refresh” content=”5" />';
+		echo '<meta http-equiv="refresh" content="5" />';
 	}
+	include("header.php"); 
 ?>
 
 </head>
 <body>
+<?php
+	echo "<br>House:";
+	echo $House_Round;
+
+	echo "<br>Street:";
+	echo $Street_Round;
+
+	echo "<br>Min:";
+	echo $minRound;
+
+?>
 <script>
-function growBar(h,ref) {
-    height = h.toString();
-    var heightStr = height.concat("px");
+function growBar(energy,ref,height) {
+// function growBar(h,ref) {
+
+	var barHeight = height*energy/ref;
+    heightStr = barHeight.toString();
+    var heightStr = heightStr.concat("px");
+
     document.getElementById("transformerBar").style.height = heightStr;
-	if (h > ref) {
-		var delta = h- ref;
+	if (energy > ref) {
+		var delta = parseInt(energy - ref);
 		var message = "Ouch, your street used ";
 		message = message.concat(delta);
 		message = message.concat("kWh too much.");
@@ -60,7 +78,7 @@ function growBar(h,ref) {
     	document.getElementById("tryAgainText").innerHTML = message;
 		setTimeout(blackout, 4000)
 	} else {
-		var delta = ref - h;
+		var delta = parseInt(ref - energy);
 		var message = "Well done. You have ";
 		message = message.concat(delta);
 		message = message.concat("kWh spare.");
@@ -92,12 +110,23 @@ function tryAgain() {
 </script>
 
 
+<?php include("_nav_bar_neighbours.php"); ?>
 
-
+<div class="container">
+<div class="row">
+<div class="col-xs-10 col-xs-push-1" style="background-color: transparent;">
 
 <?php
-include("_nav_bar_neighbours.php");
-echo "<h1>Results after round $Commited_Round</h1>";
+
+	if ($Street_Round == 1) { 
+	echo "<h2>Wednesday's verdict</h2>";
+	} else
+	if ($Street_Round == 2) { 
+	echo "<h2>Thursday's results</h2>";
+	} else
+	if ($Street_Round == 3) { 
+	echo "<h2>Friday - the finale.</h2>";
+	}
 
 $StreetReference = 0;
 $StreetEnergy    = 0;
@@ -153,6 +182,9 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 	echo "<div class='col-xs-4 col-sm-3 top-buffer nopadding'>";
         if ($row['Round'] >= $House_Round) {
+			if ($row['idHouse'] == $idHouse) {
+				echo "My House<br>";	
+			}
             echo '<img class="houseicon" id="house_'.$row['HouseType'].'" src="img/house_'.$row['HouseType'].'.png">';
             echo '<div class="powerbar" style="height:'.intval(15*$RefEnergy).'px;"></div>';
             if ($HouseEnergy > $RefEnergy) {
@@ -176,11 +208,23 @@ while ($row = mysqli_fetch_assoc($result)) {
 }
 
 
-		$benchmark = intval(150*0.9);
-		$barHeight = intval(150*$StreetEnergy/$StreetReference);
-		if ($House_Round == $minRound) {
+		if ($Street_Round == $minRound) {
 			$go = 'go';
-			$growBar =  "growBar($barHeight,$benchmark)";
+			// $growBar =  "growBar($barHeight,$benchmark)";
+			$height = 150;
+			$challenge = 0.9*$StreetReference;
+			$growBar =  "growBar($StreetEnergy,$challenge,$height)";
+
+
+			$sql="SELECT idRound FROM Round WHERE Street_idStreet = $idStreet AND Street_Round = $Street_Round";
+			$result = mysqli_query($db,$sql);
+			if (mysqli_fetch_assoc($result)) {
+				$sql="UPDATE Round SET result = $StreetEnergy, target = $challenge WHERE Street_idStreet = $idStreet AND Street_Round = $Street_Round";
+			} else {
+				$sql="INSERT INTO Round (Street_idStreet, Street_Round, result, target) VALUES ($idStreet,$Street_Round,$StreetEnergy,$challenge)";
+			}
+			mysqli_query($db,$sql);
+
 		} else {
 			$go = 'nogo';
 			$growBar =  "";
@@ -189,21 +233,26 @@ while ($row = mysqli_fetch_assoc($result)) {
 		}
 ?>
 
-<div class="container">
-	<div class="row">
 <div class='col-xs-4 col-sm-3 top-buffer nopadding'>
 	<table>
 	<tr><td>
 	<img class="housebutton" id="transformer" onload="<?php echo $growBar; ?>" src="img/transformer_static.gif">
 	</td> <td class="bars">
-	<div class="powerbar feeder" style="height:<?php echo $benchmark;?>px;"></div>
+	<div class="powerbar feeder" style="height:150px;"></div>
 	</td> <td class="bars">
 	<div class="powerbar feeder red" id="transformerBar" style="height:0px;"></div>
 	</td> </tr> </table> 
 </div>
 
 <div id="tryAgain" class="tryAgain">
-<form method="get" action="ApplianceChoice.php">
+<?php
+if ($Street_Round < 3) {
+	$action = "ApplianceChoice.php";
+} else {
+	$action = "Results.php";
+}
+?>
+	<form method="get" action="<?php echo $action; ?>">
 	<input type="hidden" name="go" value="<?php echo $go; ?>">
 	<input type="hidden" name="ht" value="<?php echo $_GET[ht]; ?>">
 	<input type="hidden" name="hid" value="<?php echo $idHouse; ?>">

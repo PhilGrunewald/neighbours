@@ -23,13 +23,17 @@ $db = mysqli_connect($server,$dbUserName,$dbUserPass,$dbName);
 
 <?php
 $idStreet = $_GET[sid];
+$ht = $_GET[ht];
 $sql="SELECT idHouse FROM House WHERE Street_idStreet = $idStreet AND HouseType = $_GET[ht]";
 $result = mysqli_query($db,$sql);
 if (mysqli_num_rows($result)) {
 	// a house like this exists (could be a page reload or two people choosing the same houseType
 	$row = mysqli_fetch_assoc($result);
 	if ($_GET[hid] == 0) {
-		echo "House occupied";
+		echo '<div class="HouseName">Give your house a name:';
+			
+		echo '</div>';
+		// echo "House occupied";
 		$idHouse = $row['idHouse'];
 		echo "Dont care - will cohabit OR choose another";
 	}
@@ -87,7 +91,7 @@ if (mysqli_num_rows($result)) {
 </div>
 <div class="row">
 		<div class="col-xs-6 col-xs-push-1" style="background-color: transparent;">
-		<div class="houseRooms" style='background-image: url("img/house_0.png")'>
+		<div class="houseRooms" style='background-image: url("img/house_<?php echo $ht; ?>a.png")'>
 <?php
 $result = mysqli_query($db,$sqlq);
 while($appliance = mysqli_fetch_assoc($result)) {
@@ -118,17 +122,22 @@ while($appliance = mysqli_fetch_assoc($result)) {
 		value ="'.intval($minutes).'">';
 
 
-	if ($Round == 0) {
-		// create the reference case
-		$sqlq="INSERT INTO Choices (`House_Round`,`Street_idStreet`,`House_idHouse`,`Appliance_idAppliance`,`Minutes`) VALUES ('$Round','$idStreet','$idHouse','$id','$minutes')";
-		mysqli_query($db,$sqlq);
-	}
+ 	if ($Round == 0) {
+ 		// create the reference case
+ 		$sqlq="INSERT INTO Choices (`House_Round`,`Street_idStreet`,`House_idHouse`,`Appliance_idAppliance`,`Minutes`) VALUES ('$Round','$idStreet','$idHouse','$id','$minutes')";
+ 		mysqli_query($db,$sqlq);
+ 	}
 }
 $NextRound = intval($Round)+1;
-$sqlq="UPDATE House SET Round = $NextRound WHERE idHouse = $idHouse";
-mysqli_query($db,$sqlq);
-$sqlq="UPDATE Street SET House_Round = $NextRound WHERE idStreet = $idStreet";
-mysqli_query($db,$sqlq);
+// $sqlq="UPDATE House SET Round = $NextRound WHERE idHouse = $idHouse";
+// mysqli_query($db,$sqlq);
+$sqlq="SELECT House_Round FROM Street WHERE idStreet = $idStreet";
+$result = mysqli_query($db,$sqlq);
+$row = mysqli_fetch_assoc($result);
+if ($row[HouseRound] < $NextRound) { 
+	$sqlq="UPDATE Street SET House_Round = $NextRound WHERE idStreet = $idStreet";
+	mysqli_query($db,$sqlq);
+}
 ?>
 </div> <!-- houseRooms  -->
 </div> <!-- col house  -->
