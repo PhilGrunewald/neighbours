@@ -47,28 +47,15 @@
 
 </head>
 <body>
-<?php
-	echo "<br>House:";
-	echo $House_Round;
-
-	echo "<br>Street:";
-	echo $Street_Round;
-
-	echo "<br>Min:";
-	echo $minRound;
-
-?>
 <script>
 function growBar(energy,ref,height) {
-// function growBar(h,ref) {
-
 	var barHeight = height*energy/ref;
     heightStr = barHeight.toString();
     var heightStr = heightStr.concat("px");
 
     document.getElementById("transformerBar").style.height = heightStr;
 	if (energy > ref) {
-		var delta = parseInt(energy - ref);
+		var delta = Math.round( (energy - ref ) * 10 ) / 10
 		var message = "Ouch, your street used ";
 		message = message.concat(delta);
 		message = message.concat("kWh too much.");
@@ -78,15 +65,15 @@ function growBar(energy,ref,height) {
     	document.getElementById("tryAgainText").innerHTML = message;
 		setTimeout(blackout, 4000)
 	} else {
-		var delta = parseInt(ref - energy);
+		var delta = Math.round( (ref - energy) * 10 ) / 10
+		// var delta = parseInt(1000*ref - 1000*energy);
 		var message = "Well done. You have ";
 		message = message.concat(delta);
 		message = message.concat("kWh spare.");
 		document.getElementById("transformer").onload = '';
     	document.getElementById("transformer").src = 'img/transformer_ok.gif';
     	document.getElementById("tryAgainText").innerHTML = message;
-    	document.getElementById("tryAgainBtn").value = "Next day...";
-		setTimeout(tryAgain, 2000)
+		setTimeout(tryAgain, 4000)
 	}
 }
 
@@ -146,8 +133,10 @@ while ($row = mysqli_fetch_assoc($result)) {
 	$PowerTime = mysqli_query($db,$sql);
 	$HouseEnergy = 0;
 	while ($pt = mysqli_fetch_assoc($PowerTime)) {
-		$HouseEnergy = $HouseEnergy + intval(intval($pt['Power'])*intval($pt['Minutes'])/60000);
+		$HouseEnergy = $HouseEnergy + (intval($pt['Power'])*intval($pt['Minutes'])/60000);
 		}
+
+	$HouseEnergy = round($HouseEnergy,1);
 	$StreetEnergy = $StreetEnergy + $HouseEnergy;
         //
 	// Reference House Energy
@@ -163,8 +152,9 @@ while ($row = mysqli_fetch_assoc($result)) {
 	$PowerTime = mysqli_query($db,$sql);
 	$RefEnergy = 0;
 	while ($pt = mysqli_fetch_assoc($PowerTime)) {
-		$RefEnergy = $RefEnergy + intval(intval($pt['Power'])*intval($pt['Minutes'])/60000);
+		$RefEnergy = $RefEnergy + (intval($pt['Power'])*intval($pt['Minutes'])/60000);
 	}
+	$RefEnergy = round($RefEnergy,1);
 	// Reference Street Energy
 	$sql="SELECT Power, Minutes
 	  FROM Choices 
@@ -177,27 +167,29 @@ while ($row = mysqli_fetch_assoc($result)) {
 	$PowerTime = mysqli_query($db,$sql);
 
 	while ($pt = mysqli_fetch_assoc($PowerTime)) {
-		$StreetReference = $StreetReference + intval(intval($pt['Power'])*intval($pt['Minutes'])/60000);
+		$StreetReference = $StreetReference + (intval($pt['Power'])*intval($pt['Minutes'])/60000);
 	}
+	$StreetReference = round($StreetReference,1);
 
 	echo "<div class='col-xs-4 col-sm-3 top-buffer nopadding'>";
         if ($row['Round'] >= $House_Round) {
+			$delta = $HouseEnergy - $RefEnergy;
 			if ($row['idHouse'] == $idHouse) {
 				echo "My House<br>";	
 			}
             echo '<img class="houseicon" id="house_'.$row['HouseType'].'" src="img/house_'.$row['HouseType'].'.png">';
             echo '<div class="powerbar" style="height:'.intval(15*$RefEnergy).'px;"></div>';
-            if ($HouseEnergy > $RefEnergy) {
+            if ($delta > 0.1) {
                 echo '<div class="powerbar red" style="height:'.intval(15*$HouseEnergy).'px;"></div>';
-            	echo '<div>'.$HouseEnergy.' kWh ('.intval($HouseEnergy-$RefEnergy).' kWh more than before)</div>';
+            	echo '<div>'.$HouseEnergy.' kWh ('.($HouseEnergy-$RefEnergy).' kWh more than before)</div>';
             }
-            else if ($HouseEnergy == $RefEnergy) {
-                echo '<div class="powerbar red" style="height:'.intval(15*$HouseEnergy).'px;"></div>';
-            	echo '<div>'.$HouseEnergy.' kWh (same as before)</div>';
+            else if ($delta < -0.1) {
+                echo '<div class="powerbar green" style="height:'.intval(15*$HouseEnergy).'px;"></div>';
+            	echo '<div>'.$HouseEnergy.' kWh ('.($RefEnergy-$HouseEnergy).' kWh less than before)</div>';
             }
             else {
-                echo '<div class="powerbar green" style="height:'.intval(15*$HouseEnergy).'px;"></div>';
-            	echo '<div>'.$HouseEnergy.' kWh ('.intval($HouseEnergy-$RefEnergy).' kWh less than before)</div>';
+                echo '<div class="powerbar red" style="height:'.intval(15*$HouseEnergy).'px;"></div>';
+            	echo '<div>'.$HouseEnergy.' kWh (no big change)</div>';
             }
         }
         else {
@@ -210,7 +202,6 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 		if ($Street_Round == $minRound) {
 			$go = 'go';
-			// $growBar =  "growBar($barHeight,$benchmark)";
 			$height = 150;
 			$challenge = 0.9*$StreetReference;
 			$growBar =  "growBar($StreetEnergy,$challenge,$height)";
@@ -228,8 +219,6 @@ while ($row = mysqli_fetch_assoc($result)) {
 		} else {
 			$go = 'nogo';
 			$growBar =  "";
-			echo "waiting $myRound  xx";
-		   //  echo "	and $minRound";
 		}
 ?>
 
@@ -247,8 +236,10 @@ while ($row = mysqli_fetch_assoc($result)) {
 <div id="tryAgain" class="tryAgain">
 <?php
 if ($Street_Round < 3) {
+	$label = "Next day...";
 	$action = "ApplianceChoice.php";
 } else {
+	$label = "See results";
 	$action = "Results.php";
 }
 ?>
@@ -258,7 +249,7 @@ if ($Street_Round < 3) {
 	<input type="hidden" name="hid" value="<?php echo $idHouse; ?>">
 	<input type="hidden" name="sid" value="<?php echo $idStreet; ?>">
 	<div id="tryAgainText"> </div> 
-	<input type="submit" id="tryAgainBtn" class="btn-success tryAgainBtn" value="Try again" >
+	<input type="submit" id="tryAgainBtn" class="btn-success tryAgainBtn" value="<?php echo $label; ?>" >
 </form> 
 </div> 
 

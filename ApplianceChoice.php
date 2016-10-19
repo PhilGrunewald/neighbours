@@ -30,12 +30,7 @@ if (mysqli_num_rows($result)) {
 	// a house like this exists (could be a page reload or two people choosing the same houseType
 	$row = mysqli_fetch_assoc($result);
 	if ($_GET[hid] == 0) {
-		echo '<div class="HouseName">Give your house a name:';
-			
-		echo '</div>';
-		// echo "House occupied";
 		$idHouse = $row['idHouse'];
-		echo "Dont care - will cohabit OR choose another";
 	}
 	else {
 		// repeat round
@@ -75,8 +70,6 @@ if (mysqli_num_rows($result)) {
 	if ($Round == 0) { 
 	echo "<h2>It is Wednesday, 6pm</h2>";
 	echo "<p>What could you do without in the next hour? Click an appliance to make changes. Double click to turn on/off</p>";
-	echo '<p>You can give your house a name, if you like</p>';
-	echo '<input id="HouseName" type="text" name="name" value="My House"></br>';
 	} else
 	if ($Round == 1) { 
 	echo "<h2>Now it is Thursday, 6pm</h2>";
@@ -199,7 +192,7 @@ function showAppliance(id,Name,Power) {
 
 function updateBox(id,minutes) {
 	document.getElementById(id).value = minutes;  // the hidden input value where id="Appliance_idAppliance"
-	document.getElementById("powerBox").innerHTML = minutes;
+	// document.getElementById("powerBox").innerHTML = minutes;
 	// var w = parseInt(document.getElementById("ApplianceRange").style.width);
 	var w = 200*minutes/60;
 	val = w.toString();

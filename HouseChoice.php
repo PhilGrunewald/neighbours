@@ -14,7 +14,11 @@
 		    exit();
 		}
 	else {
-		$sql="SELECT idStreet From Street WHERE StreetName = '$_POST[StreetName]'";
+		$sn = $_GET[sn];
+		$sql="SELECT idStreet 
+			From Street 
+			WHERE House_Round < 2
+			AND StreetName = '$sn'";
 		$result = mysqli_query($db,$sql);
 		if (mysqli_num_rows($result) != 0)
 			{
@@ -25,11 +29,11 @@
 			else
 			{
 				// StreetName is new - create this street
-				$sql="INSERT INTO Street (`StreetName`) VALUE ('$_POST[StreetName]')";
+				$sql="INSERT INTO Street (`StreetName`) VALUE ('$sn')";
 				mysqli_query($db,$sql);
 				$idStreet = mysqli_insert_id($db);
 			}
-		$_GET[sid] = $idStreet;
+		// $_GET[sid] = $idStreet;
 	}
 ?>
 
@@ -48,10 +52,14 @@
 
 
 <div class="container">
-	<div class="row">
-	<div class="roadsign"><div class="StreetName"><?php echo $_POST[StreetName]?></div></div>
+<div class="row">
+	<div class='col-md-4 col-md-offset-4'>
+</br>
 	<h3>Choose your house</h3>
-	<div class='col-xs-6 col-sm-4 col-md-3 top-buffer nopadding'>
+	</div>
+</div> 
+<div class="row">
+<div class='col-xs-6 col-sm-4 col-md-3 top-buffer nopadding'>
             <button class="houseChoice" id='$HouseType' value='2' onClick='pickHouse(this)'><h3>Prime of life</h3> 
                 <img class="housebutton" src="img/house_2.png">
 <p>An elderly and very contented couple. So long as there is a hot cup of tea and some music - all is fine.</p>
@@ -87,6 +95,18 @@
         </div>
 </div>
 </form>
+<div class="row">
+	<div class='col-md-4 col-md-offset-4'>
+	</br>
+	<div class="roadsign"><div class="StreetName"><?php echo $sn?></div></div>
+	<p>To invite friends send them this link: </br>
+	<?php 
+	$StreetStr = urlencode($sn);
+	echo "http://www.energy-use.org/neighbours/HouseChoice.php?sn=$StreetStr";
+	?>
+</p>
+	</div>
+</div> 
 
 </body>
 </html>

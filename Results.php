@@ -16,7 +16,9 @@
 <div class="container">
 <div class="row">
 <div class="col-xs-10 col-xs-push-1" style="background-color: transparent;">
-
+<h1>How did you do?</h1>
+</div> <!-- col -->
+</div> <!-- row -->
 <?php
 
 $StreetReference = 0;
@@ -27,6 +29,7 @@ $result = mysqli_query($db,$sql);
 
 while ($row = mysqli_fetch_assoc($result)) {
 	$idStreetHouse = $row['idHouse'];
+	$HouseEnergySum = 0;
 	for ($Round = 0; $Round <= 3; $Round++) {
 
 
@@ -39,17 +42,20 @@ while ($row = mysqli_fetch_assoc($result)) {
 		  AND House_Round = $Round
 		  ";
 		$PowerTime = mysqli_query($db,$sql);
-		$HouseEnergy = 0;
+		$HouseEnergy    = 0;
 		while ($pt = mysqli_fetch_assoc($PowerTime)) {
-			$HouseEnergy = $HouseEnergy + intval(intval($pt['Power'])*intval($pt['Minutes'])/60000);
+				$HouseEnergy = $HouseEnergy + (intval($pt['Power'])*intval($pt['Minutes'])/60000);
 			}
 		if ($Round == 0) {
-			echo "<div class='col-xs-12 col-sm-12 top-buffer nopadding'>";
+			echo "<div class='row'>";
+			echo "<div class='col-xs-6 col-xs-push-2 col-sm-4 col-sm-push-2 top-buffer nopadding'>";
 			if ($row['idHouse'] == $idHouse) {
 				echo "My House<br>";	
 			}
         	echo '<img class="houseicon" id="house_'.$row['HouseType'].'" src="img/house_'.$row['HouseType'].'.png">';
-        	echo '<div class="powerbar" style="height:'.intval(15*$HouseEnergy).'px;"></div>';
+			echo "</div><div class='col-xs-6 col-sm-2 top-buffer nopadding'>";
+        	echo '<div class="powerbar" style="height:'.intval(15*$HouseEnergy).'px;"></div>_';
+			$HouseRef = $HouseEnergy;
 		} else {
 			$sql="SELECT result,target FROM Round WHERE Street_idStreet = $idStreet AND Street_Round = $Round";
 			$round = mysqli_query($db,$sql);
@@ -57,40 +63,63 @@ while ($row = mysqli_fetch_assoc($result)) {
 			if ($r[result] >= $r[target]) {
 					$HouseEnergy = 0;
 				} 
-            echo '<div class="powerbar green" style="height:'.intval(15*$HouseEnergy).'px;"></div>';
-        	// echo '<div>'.$HouseEnergy.' kWh</div>';
+            echo '<div class="powerbar green" style="height:'.intval(15*$HouseEnergy).'px;"></div>_';
+			$HouseEnergySum = $HouseEnergySum + $HouseEnergy;
 		}
 		if ($Round == 3) {
+			$supplyRate = intval(100 * $HouseEnergySum / (3*$HouseRef));
+			echo "</div><div class='col-xs-6 col-sm-3 top-buffer nopadding'>";
+			echo "Needs met</br><h3> $supplyRate % </h3>";
 			echo "</div>"; 
+			echo "</div><hr>"; 
 		}
 		$StreetEnergy = $StreetEnergy + $HouseEnergy;
 	}
 }
 
+?>
+</div> <!-- col -->
+</div> <!-- row -->
+<div class="row">
+<div class="col-xs-8 col-xs-push-2" style="background-color: transparent;">
+<h3>Your street</h3>
+<table>
+<?php
 
 $sql="SELECT result,target,Street_Round FROM Round WHERE Street_idStreet = $idStreet ORDER BY Street_Round";
 $result = mysqli_query($db,$sql);
 $PowerPoints = 0;
+$days = array('Wednesday','Thursday','Friday');
 while ($row = mysqli_fetch_assoc($result)) {
+	echo '<tr><td>';
 	$used = $row[result];
 	$target = $row[target];
-	echo "Round: $row[Street_Round] </br>";
-	echo "Result: $used </br>";
-	echo "Target: $target </br>";
+	$Round = $row[Street_Round];
+	$points = intval($used/$target*100);
+	$day = $days[intval($Round-1)];
 	if ($used < $target) {
-		$PowerPoints = $PowerPoints + intval($used/$target*100);
+		$PowerPoints = $PowerPoints + $points;
+		echo "$day </td><td> $points power points</br>";
+	} else {
+		echo "$day </td><td> Blackout</br>";
 	}
+	echo '</td></tr>';
 }
-echo "Your street scored $PowerPoints Power Points!";
+echo "</table>";
+echo "<b>Your street scored $PowerPoints Power Points!</b></br><hr>";
 $sql="UPDATE Street SET Power_Points = $PowerPoints WHERE idStreet = $idStreet";
 mysqli_query($db,$sql);
 
 $sql="SELECT StreetName,Power_Points FROM Street ORDER BY Power_Points DESC LIMIT 10";
 $result = mysqli_query($db,$sql);
+$rank = 1;
+echo "<h3>Power Neighbour Top 10</h3><table class='ranking'>";
+echo "<tr class='line'><td>Rank</td><td class='centerCell'>Street</td><td>Power points</td></tr>";
 while ($row = mysqli_fetch_assoc($result)) {
 	$Name = $row[StreetName];
 	$points = $row[Power_Points];
-	echo "$Name has $points<br>";
+	echo "<tr><td class='centerCell'>$rank</td><td><div class='roadsign'><div class='StreetName'> $Name</div></div></td><td class='centerCell'><div class='points'>$points</div></td></tr>";
+	$rank = $rank +1;
 }
 ?>
 </div>
