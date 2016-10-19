@@ -167,6 +167,10 @@ tr.line {
     background-color: #f00;
 }
 
+.faint {
+    background-color: rgba(200,100,100,0.1);
+}
+
 .dim {
     opacity: 0.3;
 }

@@ -6,6 +6,7 @@
 	$db = mysqli_connect($server,$dbUserName,$dbUserPass,$dbName);
 
 	$idHouse  = $_GET['hid'];
+	$hellPowerBase = 10;  // kWh per hour
 
 
 	// get Round for this house
@@ -85,7 +86,7 @@ function blackout() {
 		var file = "img/";
 		var src  = file.concat(id);
 		src = src.concat("_.png")
-		houses[i].src = 'img/house_4_.png';
+		// houses[i].src = 'img/house_4_.png';
 		houses[i].src = src;
 		setTimeout(tryAgain, 2000)
 	}
@@ -169,7 +170,6 @@ while ($row = mysqli_fetch_assoc($result)) {
 	while ($pt = mysqli_fetch_assoc($PowerTime)) {
 		$StreetReference = $StreetReference + (intval($pt['Power'])*intval($pt['Minutes'])/60000);
 	}
-	$StreetReference = round($StreetReference,1);
 
 	echo "<div class='col-xs-4 col-sm-3 top-buffer nopadding'>";
         if ($row['Round'] >= $House_Round) {
@@ -199,11 +199,23 @@ while ($row = mysqli_fetch_assoc($result)) {
         echo "</div>"; 
 }
 
+$hellPower = $hellPowerBase + $House_Round;
+$StreetReference = round($StreetReference+$hellPowerBase,1);
+$StreetEnergy = $StreetEnergy + $hellPower;
+?>
 
+<div class='col-xs-4 col-sm-3 top-buffer nopadding'>
+Neighbours from Hell
+    <img class="houseicon" id="house_1" src="img/house_1.png">
+    <div class="powerbar" style="height:150px;"></div>
+	<div class="powerbar red" style="height:<?php echo 15*$hellPower; ?>px;"></div>
+	<div><?php echo $hellPower; ?> kWh (1 kWh more than before)</div>
+</div> 
+<?php
 		if ($Street_Round == $minRound) {
 			$go = 'go';
 			$height = 150;
-			$challenge = 0.9*$StreetReference;
+			$challenge = $StreetReference;
 			$growBar =  "growBar($StreetEnergy,$challenge,$height)";
 
 

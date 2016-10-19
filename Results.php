@@ -31,8 +31,6 @@ while ($row = mysqli_fetch_assoc($result)) {
 	$idStreetHouse = $row['idHouse'];
 	$HouseEnergySum = 0;
 	for ($Round = 0; $Round <= 3; $Round++) {
-
-
 		$sql="SELECT Power, Minutes
 		  FROM Choices 
 		  Join Appliances
@@ -60,10 +58,19 @@ while ($row = mysqli_fetch_assoc($result)) {
 			$sql="SELECT result,target FROM Round WHERE Street_idStreet = $idStreet AND Street_Round = $Round";
 			$round = mysqli_query($db,$sql);
 			$r = mysqli_fetch_assoc($round);
-			if ($r[result] >= $r[target]) {
-					$HouseEnergy = 0;
-				} 
-            echo '<div class="powerbar green" style="height:'.intval(15*$HouseEnergy).'px;"></div>_';
+			if ($r[result] > $r[target]) {
+            	echo '<div class="powerbar faint" style="height:'.intval(15*$HouseEnergy).'px;"></div>_';
+				$HouseEnergy = 0;
+				if ($Round == 1) {$r1="faint";}
+				if ($Round == 2) {$r2="faint";}
+				if ($Round == 3) {$r3="faint";}
+			} else {
+				if ($Round == 1) {$r1="green";}
+				if ($Round == 2) {$r2="green";}
+				if ($Round == 3) {$r3="green";}
+            	echo '<div class="powerbar green" style="height:'.intval(15*$HouseEnergy).'px;"></div>_';
+			}
+			
 			$HouseEnergySum = $HouseEnergySum + $HouseEnergy;
 		}
 		if ($Round == 3) {
@@ -76,10 +83,17 @@ while ($row = mysqli_fetch_assoc($result)) {
 		$StreetEnergy = $StreetEnergy + $HouseEnergy;
 	}
 }
-
 ?>
-</div> <!-- col -->
+<div class='row'>
+  <div class='col-xs-6 col-xs-push-2 col-sm-4 col-sm-push-2 top-buffer nopadding'>
+Neighbours from Hell<br>
+	  <img class="houseicon" id="house_1" src="img/house_1.png">
+  </div><div class='col-xs-6 col-sm-2 top-buffer nopadding'>
+  <div class="powerbar" style="height:150px;"></div>_<div class="powerbar <?php echo $r1; ?>" style="height:165px;"></div>_<div class="powerbar <?php echo $r2; ?>" style="height:180px;"></div>_<div class="powerbar <?php echo $r3; ?>" style="height:195px;"></div>_</div><div class='col-xs-6 col-sm-3 top-buffer nopadding'>
+  </div> <!-- col -->
 </div> <!-- row -->
+<hr>
+
 <div class="row">
 <div class="col-xs-8 col-xs-push-2" style="background-color: transparent;">
 <h3>Your street</h3>
