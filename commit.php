@@ -193,7 +193,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             }
         }
         else {
-            echo '<img class="houseicon dim" src="img/house_'.$row['HouseType'].'_">';
+            echo '<img class="houseicon dim" src="img/house_'.$row['HouseType'].'_.png">';
             echo '<div>Waiting to commit</div>';
         }
         echo "</div>"; 
