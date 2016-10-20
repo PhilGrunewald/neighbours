@@ -59,7 +59,7 @@ function growBar(energy,ref,height) {
 		var delta = Math.round( (energy - ref ) * 10 ) / 10
 		var message = "Ouch, your street used ";
 		message = message.concat(delta);
-		message = message.concat("kWh too much.");
+		message = message.concat("kWh too much. Now you all sit in the dark.");
 		
 		document.getElementById("transformer").onload = '';
 		document.getElementById("transformer").src = 'img/transformer_blowup.gif';
@@ -70,7 +70,7 @@ function growBar(energy,ref,height) {
 		// var delta = parseInt(1000*ref - 1000*energy);
 		var message = "Well done. You have ";
 		message = message.concat(delta);
-		message = message.concat("kWh spare.");
+		message = message.concat("kWh spare. Did you give up too much?");
 		document.getElementById("transformer").onload = '';
     	document.getElementById("transformer").src = 'img/transformer_ok.gif';
     	document.getElementById("tryAgainText").innerHTML = message;
@@ -194,7 +194,13 @@ while ($row = mysqli_fetch_assoc($result)) {
         }
         else {
             echo '<img class="houseicon dim" src="img/house_'.$row['HouseType'].'_.png">';
-            echo '<div>Waiting to commit</div>';
+			echo '<form method="get" action="delete.php">';
+			echo '<div>Waiting for their choice</div>';
+            echo '<input type="hidden" value="'.$idHouse.'" name="hid">';
+            echo '<input type="hidden" value="'.$_GET[ht].'" name="ht">';
+            echo '<input type="hidden" value="'.$row['idHouse'].'" name="deleteid">';
+            echo '<input class="btn-danger" type="submit" value="Evict">';
+			echo '</form>';
         }
         echo "</div>"; 
 }
@@ -248,7 +254,7 @@ Neighbours from Hell
 <div id="tryAgain" class="tryAgain">
 <?php
 if ($Street_Round < 3) {
-	$label = "Next day...";
+	$label = "Try again. Next day...";
 	$action = "ApplianceChoice.php";
 } else {
 	$label = "See results";

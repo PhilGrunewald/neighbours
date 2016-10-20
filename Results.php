@@ -119,11 +119,27 @@ while ($row = mysqli_fetch_assoc($result)) {
 	}
 	echo '</td></tr>';
 }
-echo "</table>";
+echo "</table></br>";
+
 echo "<b>Your street scored $PowerPoints Power Points!</b></br><hr>";
 $sql="UPDATE Street SET Power_Points = $PowerPoints WHERE idStreet = $idStreet";
 mysqli_query($db,$sql);
+?>
 
+<form method="get" action="HouseChoice.php">
+<?php
+	$sqlq   = "SELECT StreetName FROM Street WHERE idStreet = $idStreet";
+	$result = mysqli_query($db,$sqlq);
+	$row    = mysqli_fetch_assoc($result);
+	$sn     = $row['StreetName'];
+	echo '<input type="hidden" value="'.sn.'_" name="sn">';
+?>
+<input class="btn-success" type="submit" value="Play again">
+</form> 
+
+
+
+<?php
 $sql="SELECT StreetName,Power_Points FROM Street ORDER BY Power_Points DESC LIMIT 10";
 $result = mysqli_query($db,$sql);
 $rank = 1;

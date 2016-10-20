@@ -30,22 +30,37 @@ if (mysqli_num_rows($result)) {
 	// a house like this exists (could be a page reload or two people choosing the same houseType
 	$row = mysqli_fetch_assoc($result);
 	if ($_GET[hid] == 0) {
-		$idHouse = $row['idHouse'];
+		// arriving from (or reloading from) HouseChoice.php
+		//
+		// OPTION 1 : everyone lives in the same house
+		// XXX $idHouse = $row['idHouse'];
+		//
+		//
+		// OPTION 2: create a house EVERY TIME
+		$sql="INSERT INTO House 
+			(`Street_idStreet`,`HouseType`,`Round`) 
+			VALUES ('$_GET[sid]',$_GET[ht],'0')";
+		mysqli_query($db,$sql);
+		$idHouse = mysqli_insert_id($db);
+		$_GET[hid] = $idHouse;
+		// pick the default values for this house type (street = 0)
+		$sqlq = "SELECT Appliance_idAppliance,Name, Power, Minutes,icon,x,y FROM Choices Join Appliances On idAppliances = Appliance_idAppliance WHERE Street_idStreet = 0 AND House_idHouse = $_GET[ht];";
+		$Round=0;
 	}
 	else {
 		// repeat round
 		$idHouse = $_GET[hid];
-	}
-
 	// find out which round this house is on
-	$sqlq = "SELECT max(House_Round),max(Street_idStreet) FROM Choices WHERE House_idHouse = $idHouse";
+	// $sqlq = "SELECT max(House_Round),max(Street_idStreet) FROM Choices WHERE House_idHouse = $idHouse";
+	$sqlq = "SELECT Round FROM House WHERE Street_idStreet = $idStreet AND idHouse = $idHouse";
 	$result = mysqli_query($db,$sqlq);
 	$row = mysqli_fetch_assoc($result);
-	$Round = $row['max(House_Round)'];
-	// $idStreet = $row['Street_idStreet'];
+	$Round = $row['Round'];
 
 	// get the entries from the last round as default
 	$sqlq = "SELECT Appliance_idAppliance,Name, Power, Minutes,icon,x,y FROM Choices Join Appliances On idAppliances = Appliance_idAppliance WHERE House_idHouse = $idHouse AND House_Round = $Round;";
+	}
+
 	}
 	else {
 		// no house like this exists - create house
@@ -86,6 +101,7 @@ if (mysqli_num_rows($result)) {
 		<div class="col-xs-6 col-xs-push-1" style="background-color: transparent;">
 		<div class="houseRooms" style='background-image: url("img/house_<?php echo $ht; ?>a.png")'>
 <?php
+
 $result = mysqli_query($db,$sqlq);
 while($appliance = mysqli_fetch_assoc($result)) {
 	$id         = $appliance['Appliance_idAppliance'];
@@ -157,13 +173,17 @@ if ($row[HouseRound] < $NextRound) {
 </div> <!-- container  -->
 
 <script>
-function switchAppliance(id,Name,Power) {
+function switchAppliance(id) {
 	var oldPower = document.getElementById(id).value;
+	var Name = document.getElementById("ApplianceName").innerHTML;
 	if (oldPower > 0) {
-		updateBox(id,0)
+		updateBox(id,0);
+		var Power = 0;
 	} else {
-		updateBox(id,60)
+		updateBox(id,60);
+		var Power = 60;
 	}
+	showAppliance(id,Name,Power);
 }
 
 function toggleAppliance(id,Name,Power) {
