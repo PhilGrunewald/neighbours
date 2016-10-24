@@ -41,6 +41,8 @@
 .appliance {
     position: absolute;
     width: 40px;
+	cursor:url("img/off.png"), auto;
+	// cursor: pointer;
 }
 
 .ranking {
@@ -52,7 +54,38 @@ tr.line {
 }
 .centerCell {
 	text-align: center;
+}
 
+.messageText {
+	position: absolute;
+    top: 37px;
+    left: 190px;
+	width: 250px;
+	color: #fff;
+	font-size: 130%;
+	text-align:center;
+}
+
+.message {
+	cursor:pointer;
+	opacity: 0.9;
+}
+
+.message-commit {
+	position: absolute;
+    left: 43px;
+    top: 75px;
+	}
+
+
+.text-dno {
+	position: absolute;
+	bottom: 50%;
+	left: 40%;
+	right: 10%;
+	width: 54%;
+	text-align: center;
+	color: #0cc;
 }
 
 #ApplianceMinutes {
@@ -70,6 +103,7 @@ tr.line {
 }
 
 #ApplianceRange {
+	cursor:pointer;
 	width: 200px;
 }
 
@@ -120,6 +154,9 @@ tr.line {
     width: 50px;
 }
 
+.dno {
+    width: 200px;
+}
 .center {
 	display: block;
 	margin-left: auto;
@@ -131,12 +168,12 @@ tr.line {
 	position: absolute;
     width: 80%;
     height: 60%;
-    left: 20%;
+    left: 0%;
     top: 50%;
     font-size: 200%;
 	padding:20px;
 //    background-color: #333;
-    background: rgba(125, 125, 125, .8);
+//     background: rgba(125, 125, 125, .8);
     color: white;
 }
 
@@ -150,6 +187,18 @@ tr.line {
     color: white;
 }
 
+.tryAgainText {
+    position: absolute;
+    top: 20px;
+    left: 172px;
+    right: 30px;
+    text-align: center;
+	cursor: pointer;
+}
+
+.small {
+	font-size: 50%;
+}
 
 #transformerBar {
     transition: all 10s;

@@ -75,6 +75,10 @@ if (mysqli_num_rows($result)) {
 		$Round=0;
 }
 
+$sqlqm="SELECT Message FROM Story WHERE Street_House_Round = $Round AND House_HouseType = $_GET[ht]";
+$result = mysqli_query($db,$sqlqm);
+$row = mysqli_fetch_assoc($result);
+$message = $row[Message];
 ?>
 
 <div class="container">
@@ -84,7 +88,7 @@ if (mysqli_num_rows($result)) {
 	<?php 
 	if ($Round == 0) { 
 	echo "<h2>It is Wednesday, 6pm</h2>";
-	echo "<p>What could you do without in the next hour? Click an appliance to make changes. Double click to turn on/off</p>";
+	echo "<p>Here is what you used yesterday at this time. What could you do without in the next hour? Click an appliance to make changes. Double click to turn on/off</p>";
 	} else
 	if ($Round == 1) { 
 	echo "<h2>Now it is Thursday, 6pm</h2>";
@@ -98,60 +102,60 @@ if (mysqli_num_rows($result)) {
 	</div>
 </div>
 <div class="row">
-		<div class="col-xs-6 col-xs-push-1" style="background-color: transparent;">
+	<div class="col-xs-12 col-sm-8 col-sm-push-1" style="background-color: transparent;"> <!-- appliance settings -->
 		<div class="houseRooms" style='background-image: url("img/house_<?php echo $ht; ?>a.png")'>
-<?php
+		<?php
+		$result = mysqli_query($db,$sqlq);
+		while($appliance = mysqli_fetch_assoc($result)) {
+			$id         = $appliance['Appliance_idAppliance'];
+			$power      = $appliance['Power'];
+			$minutes	= $appliance['Minutes'];
+			$left		= $appliance['x']."px";
+			$top		= $appliance['y']."px";
+		
+			$parameters = $id.",\"".$appliance['Name']."\",".$power;
+			$dblclick   = "ondblclick='toggleAppliance(".$parameters.")'";
+			$click      = "onclick=     'showAppliance(".$parameters.")'";
+			$icon		= $appliance['icon'];
+			$img        = "src=\"img/app_$icon.png\"";
+		
+			if ($minutes > 0) {
+				$opacity    = " opacity: 1;";
+			} else {
+				$opacity    = " opacity: 0.3;";
+			}
+			$position	= "style=\"top: $top; left: $left; $opacity\"; ";
+			echo "<img class=\"appliance\" id=\"icon_$id\" $position $click $dblclick $img>";
+		
+		
+			echo '<input type  ="hidden" 
+				id    ="'.$appliance['Appliance_idAppliance'].'" 
+				name  ="'.$appliance['Appliance_idAppliance'].'" 
+				value ="'.intval($minutes).'">';
+		
+		
+		 	if ($Round == 0) {
+		 		// create the reference case
+		 		$sqlq="INSERT INTO Choices (`House_Round`,`Street_idStreet`,`House_idHouse`,`Appliance_idAppliance`,`Minutes`) VALUES ('$Round','$idStreet','$idHouse','$id','$minutes')";
+		 		mysqli_query($db,$sqlq);
+		 	}
+		}
+		$NextRound = intval($Round)+1;
+		// $sqlq="UPDATE House SET Round = $NextRound WHERE idHouse = $idHouse";
+		// mysqli_query($db,$sqlq);
+		$sqlq="SELECT House_Round FROM Street WHERE idStreet = $idStreet";
+		$result = mysqli_query($db,$sqlq);
+		$row = mysqli_fetch_assoc($result);
+		if ($row[HouseRound] < $NextRound) { 
+			$sqlq="UPDATE Street SET House_Round = $NextRound WHERE idStreet = $idStreet";
+			mysqli_query($db,$sqlq);
+		}
+		echo "<div class='message' id='Message' onclick='hideMessage()'><img src='img/house_speech.png'><div class='messageText'>$message</div></div>";
+		?>
+		</div> <!-- houseRooms  -->
+	</div> <!-- col house  -->
 
-$result = mysqli_query($db,$sqlq);
-while($appliance = mysqli_fetch_assoc($result)) {
-	$id         = $appliance['Appliance_idAppliance'];
-	$power      = $appliance['Power'];
-	$minutes	= $appliance['Minutes'];
-	$left		= $appliance['x']."px";
-	$top		= $appliance['y']."px";
-
-	$parameters = $id.",\"".$appliance['Name']."\",".$power;
-	$dblclick   = "ondblclick='toggleAppliance(".$parameters.")'";
-	$click      = "onclick=     'showAppliance(".$parameters.")'";
-	$icon		= $appliance['icon'];
-	$img        = "src=\"img/app_$icon.png\"";
-
-	if ($minutes > 0) {
-		$opacity    = " opacity: 1;";
-	} else {
-		$opacity    = " opacity: 0.3;";
-	}
-	$position	= "style=\"top: $top; left: $left; $opacity\"; ";
-	echo "<img class=\"appliance\" id=\"icon_$id\" $position $click $dblclick $img>";
-
-
-	echo '<input type  ="hidden" 
-		id    ="'.$appliance['Appliance_idAppliance'].'" 
-		name  ="'.$appliance['Appliance_idAppliance'].'" 
-		value ="'.intval($minutes).'">';
-
-
- 	if ($Round == 0) {
- 		// create the reference case
- 		$sqlq="INSERT INTO Choices (`House_Round`,`Street_idStreet`,`House_idHouse`,`Appliance_idAppliance`,`Minutes`) VALUES ('$Round','$idStreet','$idHouse','$id','$minutes')";
- 		mysqli_query($db,$sqlq);
- 	}
-}
-$NextRound = intval($Round)+1;
-// $sqlq="UPDATE House SET Round = $NextRound WHERE idHouse = $idHouse";
-// mysqli_query($db,$sqlq);
-$sqlq="SELECT House_Round FROM Street WHERE idStreet = $idStreet";
-$result = mysqli_query($db,$sqlq);
-$row = mysqli_fetch_assoc($result);
-if ($row[HouseRound] < $NextRound) { 
-	$sqlq="UPDATE Street SET House_Round = $NextRound WHERE idStreet = $idStreet";
-	mysqli_query($db,$sqlq);
-}
-?>
-</div> <!-- houseRooms  -->
-</div> <!-- col house  -->
-
-	<div class="col-xs-12 col-sm-3 col-sm-push-2 col-md-push-1" style="background-color: transparent;"> <!-- appliance settings -->
+	<div class="col-xs-12 col-sm-3 col-sm-push-1 col-md-pull-1" style="background-color: transparent;"> <!-- appliance settings -->
 		<h1 id="ApplianceName"></h1>
 		<img id="ApplianceIcon">
 		<h3><span id="AppliancePower"></span> Watt </h3>
@@ -173,6 +177,10 @@ if ($row[HouseRound] < $NextRound) {
 </div> <!-- container  -->
 
 <script>
+function hideMessage() {
+	document.getElementById("Message").style.visibility = "hidden";
+}
+
 function switchAppliance(id) {
 	var oldPower = document.getElementById(id).value;
 	var Name = document.getElementById("ApplianceName").innerHTML;
@@ -228,10 +236,11 @@ function updateBox(id,minutes) {
 	} else {
 		minStr = minStr.concat(minutes);
 		minStr = minStr.concat(" min");
-		document.getElementById(iconID).style.opacity = 1;
+		var opacity = 0.5 + (0.7 * (minutes/60));
+		document.getElementById(iconID).style.opacity = opacity;
+		// document.getElementById(iconID).style.opacity = 1;
 		document.getElementById("ApplianceSwitch").src = "img/meter_switch_on.png";
 	}
-
 	document.getElementById("ApplianceMinutes").innerHTML = minStr;
 }
 </script>

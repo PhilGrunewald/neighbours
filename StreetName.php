@@ -20,7 +20,15 @@
   <div class="col-xs-12 col-sm-5 col-sm-push-1" style="background-color: transparent;">
 </br>
 <p>Your neighbours need your help. Ever since the family from hell has moved in next door, things have gone bad. They use so much electricity that the transformer in the road no longer copes.</p>
-<p>Early evenings are the worst. Between 6 and 7pm everyone seems to be using all their appliances. The guy from the Central Power Networks says:</br> "<i>If you don't reduce electricity use between 6 and 7, the transformer might fail and you will sit in the dark.</i>"</p>
+<p>Early evenings are the worst. Between 6 and 7pm everyone seems to be using all their appliances. The guy from the Central Power Networks says:</br>
+
+</p>
+
+<div class="col-xs-12">
+	<img src='img/house_dno.png' class="img-responsive">
+</div> 
+
+
 <p>Be a good neighbour and help.</p>
 
 </div>

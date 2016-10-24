@@ -57,9 +57,9 @@ function growBar(energy,ref,height) {
     document.getElementById("transformerBar").style.height = heightStr;
 	if (energy > ref) {
 		var delta = Math.round( (energy - ref ) * 10 ) / 10
-		var message = "Ouch, your street used ";
+		var message = "Ouch,</br> your street used ";
 		message = message.concat(delta);
-		message = message.concat("kWh too much. Now you all sit in the dark.");
+		message = message.concat("kWh too much. Now you all sit in the dark.<br> <p class='small'>Click to continue</p>");
 		
 		document.getElementById("transformer").onload = '';
 		document.getElementById("transformer").src = 'img/transformer_blowup.gif';
@@ -68,9 +68,9 @@ function growBar(energy,ref,height) {
 	} else {
 		var delta = Math.round( (ref - energy) * 10 ) / 10
 		// var delta = parseInt(1000*ref - 1000*energy);
-		var message = "Well done. You have ";
+		var message = "Well done.</br> You have ";
 		message = message.concat(delta);
-		message = message.concat("kWh spare. Did you give up too much?");
+		message = message.concat("kWh spare. Did you give up too much?<br> <p class='small'>Click to continue</p>");
 		document.getElementById("transformer").onload = '';
     	document.getElementById("transformer").src = 'img/transformer_ok.gif';
     	document.getElementById("tryAgainText").innerHTML = message;
@@ -251,25 +251,36 @@ Neighbours from Hell
 	</td> </tr> </table> 
 </div>
 
-<div id="tryAgain" class="tryAgain">
 <?php
 if ($Street_Round < 3) {
-	$label = "Try again. Next day...";
+	$label = "Click to continue";
 	$action = "ApplianceChoice.php";
 } else {
-	$label = "See results";
+	$label = "Click to see results";
 	$action = "Results.php";
 }
 ?>
-	<form method="get" action="<?php echo $action; ?>">
+<form method="get" action="<?php echo $action; ?>" id="tryAgain" class="tryAgain" onclick="submit()">
+<img class="dno" src="img/dno.png">
+<div class="message-commit">
+<img src='img/house_speech.png' class="message">
+	<div id="tryAgainText" class="tryAgainText"> </div> 
+</div> 
 	<input type="hidden" name="go" value="<?php echo $go; ?>">
 	<input type="hidden" name="ht" value="<?php echo $_GET[ht]; ?>">
 	<input type="hidden" name="hid" value="<?php echo $idHouse; ?>">
 	<input type="hidden" name="sid" value="<?php echo $idStreet; ?>">
-	<div id="tryAgainText"> </div> 
+<!-- 
 	<input type="submit" id="tryAgainBtn" class="btn-success tryAgainBtn" value="<?php echo $label; ?>" >
+ -->
+
+<script>
+function submit() {
+	document.getElementById("tryAgain").submit();
+}
+</script> 
 </form> 
-</div> 
+
 
 </div>
 </div>
